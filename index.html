@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prioritiz - Organiza tu correo de forma inteligente</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            transition: all 0.3s ease;
+        }
+
+        .pulse-urgent {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-900">
+
+    <!-- Navegación -->
+    <nav class="fixed w-full z-50 bg-white/80 backdrop-blur-md shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex items-center gap-2">
+                    <div class="bg-indigo-600 p-2 rounded-lg">
+                        <i class="fas fa-envelope-open-text text-white text-xl"></i>
+                    </div>
+                    <span class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">Prioritiz</span>
+                </div>
+                <div class="hidden md:flex space-x-8 items-center">
+                    <a href="#funcionalidades" class="text-gray-600 hover:text-indigo-600 font-medium">Funcionalidades</a>
+                    <a href="#como-funciona" class="text-gray-600 hover:text-indigo-600 font-medium">Cómo funciona</a>
+                    <a href="#seguimiento" class="text-gray-600 hover:text-indigo-600 font-medium">Seguimiento</a>
+                    <a href="#precios" class="text-gray-600 hover:text-indigo-600 font-medium">Precios</a>
+                    <a href="#" class="bg-indigo-600 text-white px-5 py-2 rounded-full font-semibold hover:bg-indigo-700 transition">Probar gratis</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="pt-32 pb-20 px-4 gradient-bg text-white">
+        <div class="max-w-7xl mx-auto text-center">
+            <h1 class="text-4xl md:text-6xl font-extrabold mb-6 leading-tight">
+                No solo organiza. <br>Prioritiz insiste por ti.
+            </h1>
+            <p class="text-xl mb-10 text-indigo-100 max-w-3xl mx-auto">
+                La única bandeja de entrada que detecta la urgencia y te recuerda responder cada 3 días, ajustándose a tu comportamiento para que nada se escape.
+            </p>
+            <div class="flex flex-col sm:flex-row justify-center gap-4">
+                <button class="bg-white text-indigo-600 px-8 py-4 rounded-xl font-bold text-lg shadow-xl hover:bg-gray-100 transition">
+                    Empezar ahora — Es gratis
+                </button>
+                <button class="border-2 border-white/30 bg-white/10 px-8 py-4 rounded-xl font-bold text-lg hover:bg-white/20 transition">
+                    Ver cómo insiste
+                </button>
+            </div>
+            
+            <div class="mt-16 relative">
+                <div class="mx-auto max-w-4xl glass-card p-4 rounded-2xl shadow-2xl">
+                    <!-- Simulación de interfaz -->
+                    <div class="flex border-b border-gray-200 pb-4 mb-4 items-center justify-between px-4">
+                        <div class="flex gap-2">
+                            <div class="w-3 h-3 rounded-full bg-red-400"></div>
+                            <div class="w-3 h-3 rounded-full bg-yellow-400"></div>
+                            <div class="w-3 h-3 rounded-full bg-green-400"></div>
+                        </div>
+                        <div class="text-gray-400 text-sm font-medium">Asistente de Respuesta Persistente</div>
+                        <div></div>
+                    </div>
+                    <div class="space-y-4">
+                        <!-- Correo Urgente -->
+                        <div class="flex items-center p-4 bg-red-50 border-l-4 border-red-500 rounded-xl text-left pulse-urgent">
+                            <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center mr-4">
+                                <i class="fas fa-exclamation-triangle text-red-600"></i>
+                            </div>
+                            <div class="flex-1">
+                                <div class="font-bold text-gray-800 flex items-center gap-2">
+                                    Cliente VIP (Urgente) 
+                                    <span class="text-[10px] bg-red-600 text-white px-2 py-0.5 rounded-full uppercase">Insistiendo</span>
+                                </div>
+                                <div class="text-sm text-gray-600 italic">"Necesito el contrato para hoy sin falta..."</div>
+                            </div>
+                            <div class="text-right">
+                                <span class="block text-[10px] text-red-500 font-bold">RECORDATORIO</span>
+                                <span class="text-xs text-gray-500">Cada 24h</span>
+                            </div>
+                        </div>
+                        <!-- Correo Estándar -->
+                        <div class="flex items-center p-4 bg-indigo-50 border-l-4 border-indigo-500 rounded-xl text-left">
+                            <div class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center mr-4">
+                                <i class="fas fa-calendar-alt text-indigo-600"></i>
+                            </div>
+                            <div class="flex-1">
+                                <div class="font-bold text-gray-800">Socio de Proyecto</div>
+                                <div class="text-sm text-gray-600">Actualización semanal de avances</div>
+                            </div>
+                            <div class="text-right">
+                                <span class="block text-[10px] text-indigo-500 font-bold">PRÓXIMO AVISO</span>
+                                <span class="text-xs text-gray-500">En 3 días</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Funcionalidades de Seguimiento -->
+    <section id="seguimiento" class="py-24 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-20">
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Seguimiento que no se rinde</h2>
+                <p class="text-gray-600 max-w-2xl mx-auto">Configura reglas inteligentes para que la aplicación trabaje por ti hasta que el trabajo esté terminado.</p>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="p-8 border border-gray-100 rounded-3xl feature-card shadow-sm bg-white">
+                    <div class="w-14 h-14 bg-orange-100 text-orange-600 rounded-2xl flex items-center justify-center mb-6">
+                        <i class="fas fa-redo text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-4">Regla de los 3 Días</h3>
+                    <p class="text-gray-600">¿No has respondido? Prioritiz vuelve a poner el correo al principio de tu lista cada 72 horas automáticamente.</p>
+                </div>
+                
+                <div class="p-8 border border-gray-100 rounded-3xl feature-card shadow-sm bg-white">
+                    <div class="w-14 h-14 bg-red-100 text-red-600 rounded-2xl flex items-center justify-center mb-6">
+                        <i class="fas fa-bolt text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-4">Detección de Urgencia</h3>
+                    <p class="text-gray-600">Si el correo contiene palabras clave de urgencia, los recordatorios pasan de días a horas para que actúes rápido.</p>
+                </div>
+
+                <div class="p-8 border border-gray-100 rounded-3xl feature-card shadow-sm bg-white">
+                    <div class="w-14 h-14 bg-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center mb-6">
+                        <i class="fas fa-brain text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-4">Ritmo Adaptativo</h3>
+                    <p class="text-gray-600">La IA aprende cuándo sueles responder y ajusta la frecuencia de los avisos para no ser molesta, pero sí efectiva.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Cómo funciona (Actualizado) -->
+    <section id="como-funciona" class="py-24 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row items-center gap-16">
+                <div class="md:w-1/2">
+                    <h2 class="text-3xl md:text-4xl font-bold mb-6">Un flujo de trabajo sin olvidos</h2>
+                    <ul class="space-y-6">
+                        <li class="flex gap-4">
+                            <div class="flex-shrink-0 w-8 h-8 bg-indigo-600 text-white rounded-full flex items-center justify-center font-bold">1</div>
+                            <div>
+                                <h4 class="font-bold text-lg">Llega el correo</h4>
+                                <p class="text-gray-600">Prioritiz escanea el remitente y el contenido buscando señales de prioridad.</p>
+                            </div>
+                        </li>
+                        <li class="flex gap-4">
+                            <div class="flex-shrink-0 w-8 h-8 bg-indigo-600 text-white rounded-full flex items-center justify-center font-bold">2</div>
+                            <div>
+                                <h4 class="font-bold text-lg">Activa el temporizador</h4>
+                                <p class="text-gray-600">Si no marcas como "Gestionado", se programa un ciclo de avisos cada 3 días.</p>
+                            </div>
+                        </li>
+                        <li class="flex gap-4">
+                            <div class="flex-shrink-0 w-8 h-8 bg-indigo-600 text-white rounded-full flex items-center justify-center font-bold">3</div>
+                            <div>
+                                <h4 class="font-bold text-lg">Escalado automático</h4>
+                                <p class="text-gray-600">Si detecta palabras como "Urgente" o "ASAP", la frecuencia aumenta para forzar la respuesta.</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                <div class="md:w-1/2">
+                    <div class="rounded-3xl overflow-hidden shadow-2xl relative bg-white p-8">
+                         <h4 class="font-bold mb-4 text-gray-400 uppercase text-xs tracking-widest">Configuración de Persistencia</h4>
+                         <div class="space-y-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Frecuencia Estándar</label>
+                                <input type="range" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-600" value="75">
+                                <div class="flex justify-between text-[10px] text-gray-500 mt-1">
+                                    <span>Diario</span>
+                                    <span class="font-bold text-indigo-600 italic">Cada 3 días</span>
+                                    <span>Semanal</span>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between p-3 bg-red-50 rounded-lg border border-red-100">
+                                <span class="text-sm font-bold text-red-700">Detección de Urgencia</span>
+                                <div class="w-10 h-5 bg-red-600 rounded-full relative">
+                                    <div class="absolute right-1 top-1 w-3 h-3 bg-white rounded-full"></div>
+                                </div>
+                            </div>
+                            <p class="text-xs text-gray-500 italic text-center">"La IA reducirá el intervalo a 4 horas si detecta pánico en el texto"</p>
+                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Precios -->
+    <section id="precios" class="py-24 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">Planes para todos</h2>
+                <p class="text-gray-600">El seguimiento inteligente está incluido en todos nuestros planes.</p>
+            </div>
+            
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-5xl mx-auto">
+                <!-- Plan Free -->
+                <div class="p-8 border border-gray-200 rounded-3xl hover:border-indigo-600 transition">
+                    <h3 class="text-xl font-bold mb-2">Básico</h3>
+                    <div class="text-4xl font-bold mb-6">$0 <span class="text-lg text-gray-400 font-normal">/mes</span></div>
+                    <ul class="space-y-4 mb-8 text-gray-600">
+                        <li><i class="fas fa-check text-green-500 mr-2"></i> 5 remitentes VIP</li>
+                        <li><i class="fas fa-check text-green-500 mr-2"></i> Recordatorio fijo (3 días)</li>
+                        <li><i class="fas fa-check text-green-500 mr-2"></i> 1 cuenta de correo</li>
+                    </ul>
+                    <button class="w-full py-3 border border-indigo-600 text-indigo-600 font-bold rounded-xl hover:bg-indigo-50">Elegir plan</button>
+                </div>
+                
+                <!-- Plan Pro -->
+                <div class="p-8 bg-indigo-600 rounded-3xl text-white transform scale-105 shadow-xl relative">
+                    <div class="absolute top-0 right-0 bg-yellow-400 text-indigo-900 text-xs font-bold px-3 py-1 rounded-bl-lg rounded-tr-lg">POPULAR</div>
+                    <h3 class="text-xl font-bold mb-2">Profesional</h3>
+                    <div class="text-4xl font-bold mb-6">$9 <span class="text-lg text-indigo-200 font-normal">/mes</span></div>
+                    <ul class="space-y-4 mb-8 text-indigo-100">
+                        <li><i class="fas fa-check text-yellow-400 mr-2"></i> Remitentes ilimitados</li>
+                        <li><i class="fas fa-check text-yellow-400 mr-2"></i> <b>IA de Urgencia Crítica</b></li>
+                        <li><i class="fas fa-check text-yellow-400 mr-2"></i> Frecuencia Personalizable</li>
+                        <li><i class="fas fa-check text-yellow-400 mr-2"></i> 5 cuentas de correo</li>
+                    </ul>
+                    <button class="w-full py-3 bg-white text-indigo-600 font-bold rounded-xl hover:bg-gray-100">Probar 14 días gratis</button>
+                </div>
+
+                <!-- Plan Enterprise -->
+                <div class="p-8 border border-gray-200 rounded-3xl hover:border-indigo-600 transition hidden lg:block">
+                    <h3 class="text-xl font-bold mb-2">Empresas</h3>
+                    <div class="text-4xl font-bold mb-6">$29 <span class="text-lg text-gray-400 font-normal">/mes</span></div>
+                    <ul class="space-y-4 mb-8 text-gray-600">
+                        <li><i class="fas fa-check text-green-500 mr-2"></i> Cuentas ilimitadas</li>
+                        <li><i class="fas fa-check text-green-500 mr-2"></i> Escalado jerárquico</li>
+                        <li><i class="fas fa-check text-green-500 mr-2"></i> Panel de control central</li>
+                        <li><i class="fas fa-check text-green-500 mr-2"></i> API para CRMs</li>
+                    </ul>
+                    <button class="w-full py-3 border border-indigo-600 text-indigo-600 font-bold rounded-xl hover:bg-indigo-50">Contactar ventas</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Final -->
+    <section class="py-20 bg-indigo-900 text-white">
+        <div class="max-w-4xl mx-auto text-center px-4">
+            <h2 class="text-3xl md:text-5xl font-bold mb-8">No vuelvas a decir "se me olvidó responder"</h2>
+            <p class="text-xl text-indigo-200 mb-10">Prioritiz es el asistente que no duerme hasta que tú termines tus tareas.</p>
+            <div class="max-w-md mx-auto">
+                <form class="flex gap-2">
+                    <input type="email" placeholder="Tu correo electrónico" class="flex-1 px-4 py-3 rounded-xl text-gray-900 focus:outline-none">
+                    <button type="submit" class="bg-indigo-600 px-6 py-3 rounded-xl font-bold hover:bg-indigo-500 transition">Unirse</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-gray-400 py-12 border-t border-gray-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-8">
+            <div class="flex items-center gap-2">
+                <i class="fas fa-envelope-open-text text-indigo-500 text-xl"></i>
+                <span class="text-xl font-bold text-white">Prioritiz</span>
+            </div>
+            <div class="flex gap-8 text-sm">
+                <a href="#" class="hover:text-white">Privacidad</a>
+                <a href="#" class="hover:text-white">Términos</a>
+                <a href="#" class="hover:text-white">Contacto</a>
+            </div>
+            <div class="flex gap-4">
+                <a href="#" class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-indigo-600 hover:text-white transition"><i class="fab fa-twitter"></i></a>
+                <a href="#" class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-indigo-600 hover:text-white transition"><i class="fab fa-linkedin-in"></i></a>
+            </div>
+        </div>
+        <div class="text-center mt-8 text-xs">
+            &copy; 2023 Prioritiz Inc. Todos los derechos reservados.
+        </div>
+    </footer>
+
+    <script>
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+    </script>
+</body>
+</html>
