@@ -1,0 +1,12 @@
+cosas a mejorar de la aplicación hasta el día 10/04/2026
+
+	1) aplicación similar a perplexity Correo (Perplexity Email Assistant)
+	2) Mirar que posibles implementaciones se llevan a cabo en nuestra aplicación
+	3) Implementar una IA, que pueda pedirle al usuario que quiere como prioridad
+	4) Hacer un boceto que implemente todo lo que se nos ha dicho.
+
+	*) Podemos hacer otro needfinding para preguntarle a la gente que cosas adicionales necesita o quiere en un correo 	electrónico
+
+
+
+Terminar lo de las tareas pero más visual

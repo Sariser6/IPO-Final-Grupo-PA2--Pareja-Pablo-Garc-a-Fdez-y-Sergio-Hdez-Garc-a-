@@ -1,0 +1,35 @@
+que hacer en el informe final de IPO
+* tres partes (Exploración//conceptualización//prototipo y evaluacion)
+
+
+* dentro de prototipo y evaluación, puedo hacer un apartado de iteración 1 (prototipo y evaluación // conclusion) ,y otro apartado de iteración 2 (cambios realizados //prototipo y evaluación // conclusion) 
+
+* en el needfinding podemos añadir el enlace para acceder a los datos, o al propio informe
+
+* en el punto de exploración puedo añadir un apartado de análisis de la competencia
+** dentro de la evaluación también podemos hacer la definición de audiencia, para saber a quien va dirigido nuestra aplicación
+
+** dentro de los escenarios de caso de uso, importante que miremos las tareas, para que estén bien (hacer el diagrama en nuestro caso) ==> tarea de (hacer carpeta prioritaria//resumir un solo correo//resumir todos los correos) ==> si se hace muy grande el diagrama, descomponerlo
+
+es interesante hacer una captura de diagramas con el propio diagrama de las tareas
+ejemplo  					registrarse
+				pulsar carpeta			pulsar correo
+
+
+
+* dentro de la evaluación, poner una evaluación del perfil, es decir, una introducción de la persona (perfil y pequeña introduccion), y poner el video dividido, para que no sea tan largo
+
+* dentro de la evaluación, seguir haciendo mas, pidiendo su consentimiento, y que nos diga cosas que mejoraríamos
+
+* dentro de la segunda iteracion, poner fotos sobre lo que hemos cambiado en la aplicacion
+
+
+* el ultimo apartado que sea el prototipo funcional (cambios en el diseño), importante la bibliografia en formato APA (si lo ponemos en el buscador "bibliografia APA", ya te da lo que debemos de poner). otra opcion es con "google scholar", introducimos lo que hemos hecho, y le damos a citar, dandonoslo ya en formato apa. Podemos tomar tambien la web "scotus"
+
+
+*añadir una evaluacion heuristica, para que analicemos todos los principios heuristicos dentro de nuestra aplicacion (dandole una nota sobre /10)
+
+
+
+
+

@@ -1,0 +1,1655 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prioritz — AI-Powered Inbox</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #f0f2f7;
+  --white: #ffffff;
+  --sidebar: #1a1f36;
+  --sidebar2: #232942;
+  --text: #1a1f36;
+  --text2: #5a6080;
+  --text3: #9aa0b8;
+  --accent: #3b5bdb;
+  --accent2: #4c6ef5;
+  --accent-light: #e8ecff;
+  --red: #e03131;
+  --red-light: #fff0f0;
+  --red-pulse: #ff4444;
+  --green: #2f9e44;
+  --green-light: #ebfbee;
+  --amber: #e67700;
+  --amber-light: #fff9db;
+  --purple: #7048e8;
+  --purple-light: #f3f0ff;
+  --border: #e2e6f0;
+  --shadow: 0 2px 12px rgba(26,31,54,0.08);
+  --shadow-lg: 0 8px 32px rgba(26,31,54,0.14);
+  --radius: 12px;
+  --radius-sm: 8px;
+  --font: 'Sora', sans-serif;
+  --mono: 'JetBrains Mono', monospace;
+}
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  height: 100vh;
+  overflow: hidden;
+  font-size: 14px;
+}
+
+/* ─── SCREENS ─── */
+.screen { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; transition: opacity 0.4s, transform 0.4s; }
+.screen.hidden { opacity: 0; pointer-events: none; transform: scale(0.97); }
+
+/* ─── LOGIN ─── */
+#screen-login { background: linear-gradient(135deg, #1a1f36 0%, #2d3561 50%, #1a1f36 100%); flex-direction: column; gap: 0; }
+
+.login-logo { display: flex; align-items: center; gap: 14px; margin-bottom: 40px; animation: fadeUp 0.6s ease both; }
+.login-logo-icon { width: 52px; height: 52px; background: var(--accent2); border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 24px; box-shadow: 0 4px 20px rgba(76,110,245,0.4); }
+.login-logo-text { font-size: 32px; font-weight: 700; color: white; letter-spacing: -1px; }
+.login-logo-sub { font-size: 12px; color: rgba(255,255,255,0.4); letter-spacing: 2px; text-transform: uppercase; font-family: var(--mono); margin-top: 2px; }
+
+.login-card { background: rgba(255,255,255,0.05); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 40px; width: 380px; animation: fadeUp 0.6s 0.1s ease both; }
+.login-title { font-size: 20px; font-weight: 600; color: white; margin-bottom: 6px; }
+.login-sub { font-size: 13px; color: rgba(255,255,255,0.4); margin-bottom: 28px; }
+
+.input-group { margin-bottom: 16px; }
+.input-label { font-size: 12px; font-weight: 500; color: rgba(255,255,255,0.5); margin-bottom: 6px; display: block; letter-spacing: 0.5px; text-transform: uppercase; }
+.input-wrap { position: relative; }
+.input-wrap input {
+  width: 100%; padding: 12px 44px 12px 14px;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: var(--radius-sm);
+  color: white; font-family: var(--font); font-size: 14px;
+  outline: none; transition: all 0.2s;
+}
+.input-wrap input:focus { border-color: var(--accent2); background: rgba(255,255,255,0.1); }
+.input-wrap input::placeholder { color: rgba(255,255,255,0.25); }
+.input-tick { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-size: 16px; display: none; }
+.input-tick.show { display: block; }
+
+.btn-login {
+  width: 100%; padding: 13px;
+  background: var(--accent2); border: none; border-radius: var(--radius-sm);
+  color: white; font-family: var(--font); font-size: 14px; font-weight: 600;
+  cursor: pointer; transition: all 0.2s; margin-top: 8px;
+  opacity: 0.4;
+}
+.btn-login.ready { opacity: 1; }
+.btn-login.ready:hover { background: #3b5bdb; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(76,110,245,0.4); }
+
+/* ─── LOADING ─── */
+#screen-loading { background: var(--bg); flex-direction: column; gap: 20px; }
+.loading-logo { font-size: 28px; font-weight: 700; color: var(--accent); letter-spacing: -0.5px; }
+.loading-bar-wrap { width: 240px; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+.loading-bar { height: 100%; background: var(--accent2); border-radius: 2px; width: 0; transition: width 0.1s; }
+.loading-text { font-size: 13px; color: var(--text3); font-family: var(--mono); }
+
+/* ─── MAIN APP ─── */
+#screen-app { background: var(--bg); align-items: stretch; }
+
+.app-layout { width: 100%; height: 100vh; display: flex; overflow: hidden; }
+
+/* LEFT SIDEBAR */
+.sidebar {
+  width: 200px; min-width: 200px;
+  background: var(--sidebar);
+  display: flex; flex-direction: column;
+  padding: 0;
+}
+.sidebar-logo { padding: 22px 18px 18px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid rgba(255,255,255,0.06); cursor: pointer; }
+.sidebar-logo:hover { opacity: 0.85; }
+.s-logo-icon { width: 30px; height: 30px; background: var(--accent2); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 15px; }
+.s-logo-text { font-size: 17px; font-weight: 700; color: white; letter-spacing: -0.5px; }
+
+.sidebar-section { padding: 14px 10px 6px; }
+.sidebar-label { font-size: 9px; font-weight: 600; color: rgba(255,255,255,0.25); letter-spacing: 1.5px; text-transform: uppercase; padding: 0 8px; margin-bottom: 4px; font-family: var(--mono); }
+
+.nav-item { display: flex; align-items: center; gap: 9px; padding: 8px 10px; border-radius: var(--radius-sm); cursor: pointer; color: rgba(255,255,255,0.5); transition: all 0.15s; font-size: 13px; font-weight: 400; }
+.nav-item:hover { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.85); }
+.nav-item.active { background: rgba(76,110,245,0.2); color: white; }
+.nav-item svg { width: 15px; height: 15px; flex-shrink: 0; }
+.nav-badge { margin-left: auto; background: var(--accent2); color: white; font-size: 10px; font-weight: 600; padding: 1px 6px; border-radius: 10px; font-family: var(--mono); }
+.nav-badge.red { background: var(--red); }
+
+.sidebar-footer { margin-top: auto; padding: 14px 10px; border-top: 1px solid rgba(255,255,255,0.06); }
+.s-user { display: flex; align-items: center; gap: 9px; padding: 8px; border-radius: var(--radius-sm); cursor: pointer; transition: background 0.15s; }
+.s-user:hover { background: rgba(255,255,255,0.06); }
+.s-avatar { width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg, var(--accent2), var(--purple)); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: white; flex-shrink: 0; }
+.s-user-name { font-size: 12px; font-weight: 500; color: rgba(255,255,255,0.8); }
+.s-user-email { font-size: 10px; color: rgba(255,255,255,0.3); }
+
+/* CENTER */
+.center { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+.topbar { height: 52px; background: var(--white); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 18px; gap: 10px; flex-shrink: 0; box-shadow: var(--shadow); }
+.topbar-title { font-size: 15px; font-weight: 600; flex: 1; }
+.search-box { display: flex; align-items: center; gap: 8px; background: var(--bg); border: 1px solid var(--border); border-radius: 20px; padding: 6px 14px; width: 220px; }
+.search-box input { background: none; border: none; outline: none; font-family: var(--font); font-size: 13px; color: var(--text); width: 100%; }
+.search-box input::placeholder { color: var(--text3); }
+.search-box svg { width: 14px; height: 14px; color: var(--text3); flex-shrink: 0; }
+
+.center-content { flex: 1; overflow-y: auto; padding: 20px; }
+.center-content::-webkit-scrollbar { width: 4px; }
+.center-content::-webkit-scrollbar-track { background: transparent; }
+.center-content::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+/* PRIORITY BANNER */
+.priority-banner {
+  background: white;
+  border: 2px solid var(--red);
+  border-radius: var(--radius);
+  padding: 14px 18px;
+  margin-bottom: 18px;
+  display: flex; align-items: center; gap: 14px;
+  box-shadow: 0 0 0 0 rgba(224,49,49,0.3);
+  animation: pulse-red 2s infinite;
+  cursor: pointer;
+  transition: transform 0.15s;
+}
+.priority-banner:hover { transform: translateY(-1px); }
+@keyframes pulse-red {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(224,49,49,0.3); }
+  50% { box-shadow: 0 0 0 6px rgba(224,49,49,0); }
+}
+.priority-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--red); animation: blink 1s infinite; flex-shrink: 0; }
+@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
+.priority-label { font-size: 10px; font-weight: 600; color: var(--red); letter-spacing: 1px; text-transform: uppercase; font-family: var(--mono); }
+.priority-subject { font-size: 14px; font-weight: 600; color: var(--text); }
+.priority-from { font-size: 12px; color: var(--text3); }
+.priority-info { flex: 1; }
+.priority-arrow { color: var(--red); font-size: 18px; }
+
+/* FOLDERS GRID */
+.folders-title { font-size: 13px; font-weight: 600; color: var(--text2); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+.folders-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
+
+.folder-card {
+  background: var(--white);
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+.folder-card:hover { border-color: var(--accent2); transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+.folder-card.priority-folder { border-color: var(--red); border-width: 2px; }
+.folder-card.priority-folder::before { content: '★ PRIORITARIA'; position: absolute; top: 8px; right: 8px; font-size: 8px; font-weight: 700; color: var(--red); letter-spacing: 0.5px; font-family: var(--mono); }
+.folder-card-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  padding: 4px 8px;
+  background: rgba(224,49,49,0.12);
+  border: 1px solid rgba(224,49,49,0.18);
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--red);
+  letter-spacing: 0.3px;
+  font-family: var(--mono);
+}
+.folder-card.priority-folder { padding-top: 24px; }
+
+.folder-icon { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; margin-bottom: 10px; }
+.folder-name { font-size: 14px; font-weight: 600; margin-bottom: 3px; }
+.folder-count { font-size: 12px; color: var(--text3); }
+.folder-unread { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; font-size: 10px; font-weight: 700; margin-top: 8px; }
+
+/* FOLDER VIEW */
+#view-folder { display: none; }
+.folder-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+.btn-back { display: flex; align-items: center; gap: 6px; padding: 7px 12px; background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-sm); font-family: var(--font); font-size: 13px; font-weight: 500; cursor: pointer; color: var(--text2); transition: all 0.15s; }
+.btn-back:hover { background: var(--bg); color: var(--text); }
+.folder-header-title { font-size: 17px; font-weight: 700; flex: 1; }
+.folder-actions { display: flex; gap: 8px; }
+
+.btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 13px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--white); color: var(--text); font-family: var(--font); font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+.btn:hover { background: var(--bg); }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn.primary { background: var(--accent2); border-color: var(--accent2); color: white; }
+.btn.primary:hover { background: var(--accent); border-color: var(--accent); }
+.btn.danger { background: var(--red-light); border-color: #ffb3b3; color: var(--red); }
+.btn.danger:hover { background: #ffe0e0; }
+.btn svg { width: 14px; height: 14px; }
+
+/* EMAIL LIST */
+.email-list { background: var(--white); border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden; }
+.email-item { padding: 13px 16px; border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.12s; display: flex; align-items: flex-start; gap: 12px; }
+.email-item:last-child { border-bottom: none; }
+.email-item:hover { background: var(--bg); }
+.email-item.priority-email { border-left: 3px solid var(--red); }
+.email-unread-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent2); flex-shrink: 0; margin-top: 5px; }
+.email-info { flex: 1; min-width: 0; }
+.email-row1 { display: flex; align-items: center; gap: 8px; margin-bottom: 3px; }
+.email-sender { font-weight: 600; font-size: 13px; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.email-time { font-size: 11px; color: var(--text3); font-family: var(--mono); flex-shrink: 0; }
+.email-subject { font-size: 13px; color: var(--text2); margin-bottom: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.email-preview { font-size: 12px; color: var(--text3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* EMAIL DETAIL */
+#view-email { display: none; }
+.email-detail-card { background: var(--white); border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden; }
+.email-detail-header { padding: 20px 22px 16px; border-bottom: 1px solid var(--border); }
+.email-detail-subject { font-size: 18px; font-weight: 700; margin-bottom: 10px; line-height: 1.4; }
+.email-detail-meta { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.meta-chip { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--text2); }
+.meta-chip svg { width: 13px; height: 13px; color: var(--text3); }
+.email-detail-actions { padding: 12px 22px; border-bottom: 1px solid var(--border); display: flex; gap: 8px; flex-wrap: wrap; }
+.email-detail-body { padding: 20px 22px; font-size: 14px; line-height: 1.8; color: var(--text2); }
+.email-detail-body p { margin-bottom: 12px; }
+
+.reply-box { background: #fbfcff; border: 1px solid var(--border); border-radius: var(--radius); margin: 18px 22px 0; padding: 18px; }
+.reply-box-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+.reply-box-title { font-size: 15px; font-weight: 700; }
+.reply-box-sub { font-size: 12px; color: var(--text3); }
+.reply-templates { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-bottom: 12px; }
+.reply-template { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px 12px; font-size: 12px; color: var(--text2); cursor: pointer; transition: all 0.15s; }
+.reply-template:hover { background: var(--accent-light); border-color: var(--accent2); color: var(--text); }
+.reply-textarea { width: 100%; min-height: 140px; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px; font-family: var(--font); font-size: 13px; color: var(--text); resize: vertical; background: var(--white); }
+.reply-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 12px; }
+
+#profile-modal, #profile-setup-modal { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; background: rgba(24, 31, 58, 0.55); z-index: 30; padding: 20px; }
+.profile-modal-card { width: min(420px, calc(100% - 40px)); background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow-lg); padding: 24px; }
+.profile-modal-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
+.profile-modal-title { font-size: 18px; font-weight: 700; }
+.profile-modal-close { background: none; border: none; color: var(--text3); cursor: pointer; font-size: 18px; }
+.profile-modal-row { display: grid; gap: 14px; margin-bottom: 18px; }
+.profile-modal-row span { display: block; font-size: 13px; color: var(--text2); }
+.profile-modal-actions { display: flex; justify-content: flex-end; gap: 10px; }
+.profile-modal-actions .btn { margin: 0; }
+
+/* AI PANEL */
+.ai-panel { margin: 0 22px 20px; background: linear-gradient(135deg, #f0f4ff, #f8f0ff); border: 1px solid #d0daff; border-radius: var(--radius); overflow: hidden; }
+.ai-panel-header { padding: 11px 16px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid rgba(76,110,245,0.15); }
+.ai-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); animation: blink 2s infinite; flex-shrink: 0; }
+.ai-label { font-size: 12px; font-weight: 600; color: var(--accent); flex: 1; font-family: var(--mono); }
+.ai-close { background: none; border: none; color: var(--text3); cursor: pointer; font-size: 16px; display: flex; align-items: center; }
+.ai-close:hover { color: var(--text); }
+.ai-body { padding: 14px 16px; font-size: 13.5px; line-height: 1.7; color: var(--text); }
+.ai-body p { margin-bottom: 8px; }
+.ai-body p:last-child { margin-bottom: 0; }
+.ai-loading { display: flex; align-items: center; gap: 8px; color: var(--text3); font-size: 13px; font-family: var(--mono); }
+.spinner { width: 14px; height: 14px; border: 2px solid var(--border); border-top-color: var(--accent2); border-radius: 50%; animation: spin 0.7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* RIGHT PANEL */
+.right-panel { width: 220px; min-width: 220px; background: var(--white); border-left: 1px solid var(--border); display: flex; flex-direction: column; overflow-y: auto; }
+.right-panel::-webkit-scrollbar { width: 4px; }
+.right-panel::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+.rp-section { padding: 18px 16px; border-bottom: 1px solid var(--border); }
+.rp-title { font-size: 10px; font-weight: 600; color: var(--text3); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 12px; font-family: var(--mono); }
+
+.rp-avatar { width: 52px; height: 52px; border-radius: 50%; background: linear-gradient(135deg, var(--accent2), var(--purple)); display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 700; color: white; margin: 0 auto 12px; }
+.rp-name { font-size: 14px; font-weight: 600; text-align: center; margin-bottom: 3px; }
+.rp-email { font-size: 11px; color: var(--text3); text-align: center; margin-bottom: 14px; }
+.rp-btn { width: 100%; padding: 8px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm); font-family: var(--font); font-size: 12px; font-weight: 500; cursor: pointer; color: var(--text2); transition: all 0.15s; margin-bottom: 6px; }
+.rp-btn:hover { background: var(--accent-light); color: var(--accent); border-color: var(--accent2); }
+
+.rp-stat { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-bottom: 1px solid var(--border); }
+.rp-stat:last-child { border-bottom: none; }
+.rp-stat-label { font-size: 12px; color: var(--text2); }
+.rp-stat-val { font-size: 13px; font-weight: 600; color: var(--text); font-family: var(--mono); }
+
+.rp-ai-item { padding: 8px; background: var(--bg); border-radius: var(--radius-sm); margin-bottom: 6px; font-size: 12px; color: var(--text2); line-height: 1.5; cursor: pointer; transition: background 0.12s; }
+.rp-ai-item:hover { background: var(--accent-light); color: var(--accent); }
+.rp-ai-item strong { color: var(--text); display: block; font-size: 11px; margin-bottom: 2px; }
+
+/* TAG */
+.tag { display: inline-flex; align-items: center; font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 20px; }
+.tag.work { background: #e8ecff; color: var(--accent); }
+.tag.personal { background: var(--green-light); color: var(--green); }
+.tag.finance { background: var(--amber-light); color: var(--amber); }
+.tag.social { background: var(--purple-light); color: var(--purple); }
+.tag.priority { background: var(--red-light); color: var(--red); }
+
+.due-bar-wrapper { margin-top: 8px; display: flex; align-items: center; gap: 10px; }
+.due-bar { flex: 1; height: 6px; background: var(--border); border-radius: 999px; overflow: hidden; }
+.due-bar-fill { height: 100%; background: linear-gradient(90deg, #ff6b6b, #ff8787); border-radius: 999px; transition: width 0.3s ease; }
+.due-days { font-size: 11px; color: var(--red); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+
+#compose-modal { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; background: rgba(24,31,58,0.6); z-index: 30; padding: 20px; }
+.compose-card { width: min(520px, 100%); background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow-lg); overflow: hidden; }
+.compose-header { padding: 18px 20px; display: flex; align-items: center; justify-content: space-between; gap: 10px; border-bottom: 1px solid var(--border); }
+.compose-title { font-size: 18px; font-weight: 700; }
+.compose-close { background: none; border: none; color: var(--text3); cursor: pointer; font-size: 22px; }
+.compose-body { padding: 20px; display: grid; gap: 14px; }
+.compose-body label { font-size: 12px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.5px; }
+.compose-body input, .compose-body select, .compose-body textarea { width: 100%; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px; font-family: var(--font); font-size: 13px; color: var(--text); background: var(--bg); }
+.compose-body textarea { min-height: 160px; resize: vertical; }
+.compose-actions { padding: 16px 20px 20px; display: flex; justify-content: flex-end; gap: 10px; background: var(--white); }
+.compose-actions .btn { min-width: 100px; }
+
+/* TOAST */
+.toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(0); background: var(--sidebar); color: white; padding: 10px 18px; border-radius: 20px; font-size: 13px; font-weight: 500; z-index: 1000; animation: toastIn 0.25s ease; white-space: nowrap; }
+@keyframes toastIn { from { opacity: 0; transform: translateX(-50%) translateY(10px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+
+@keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+</head>
+<body>
+
+<!-- ═══ LOGIN ═══ -->
+<div class="screen" id="screen-login">
+  <div>
+    <div class="login-logo">
+      <div class="login-logo-icon">✉</div>
+      <div>
+        <div class="login-logo-text">Prioritz</div>
+        <div class="login-logo-sub">AI-Powered Inbox</div>
+      </div>
+    </div>
+    <div class="login-card">
+      <div class="login-title">Bienvenido de nuevo</div>
+      <div class="login-sub">Introduce tus credenciales para acceder</div>
+
+      <div class="input-group">
+        <label class="input-label">Correo electrónico</label>
+        <div class="input-wrap">
+          <input type="email" id="input-email" placeholder="nombre@correo.com" oninput="checkLogin()">
+          <span class="input-tick" id="tick-email"></span>
+        </div>
+      </div>
+      <div class="input-group">
+        <label class="input-label">Contraseña</label>
+        <div class="input-wrap">
+          <input type="password" id="input-pass" placeholder="••••••••" oninput="checkLogin()">
+          <span class="input-tick" id="tick-pass"></span>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;justify-content:space-between;">
+        <button class="btn-login" id="btn-login" onclick="doLogin()">Continuar →</button>
+        <button class="btn" onclick="openProfileSetupFromLogin()" style="padding:8px 12px;background:var(--accent);color:#fff;border-radius:8px;">Crear cuenta</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ LOADING ═══ -->
+<div class="screen hidden" id="screen-loading">
+  <div style="text-align:center">
+    <div class="loading-logo">✉ Prioritz</div>
+    <div style="margin:20px 0">
+      <div class="loading-bar-wrap"><div class="loading-bar" id="loading-bar"></div></div>
+    </div>
+    <div class="loading-text" id="loading-text">Conectando con el servidor...</div>
+  </div>
+</div>
+
+<!-- ═══ MAIN APP ═══ -->
+<div class="screen hidden" id="screen-app">
+  <div class="app-layout">
+
+    <!-- LEFT SIDEBAR -->
+    <nav class="sidebar">
+      <div class="sidebar-logo" onclick="goHome()">
+        <div class="s-logo-icon">✉</div>
+        <div class="s-logo-text">Prioritz</div>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-label">Bandeja</div>
+        <div class="nav-item active" id="nav-all" onclick="goHome()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          Todos
+          <span class="nav-badge">12</span>
+        </div>
+        <div class="nav-item" id="nav-unread" onclick="openUnread()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          No leídos
+          <span class="nav-badge red" id="badge-unread">5</span>
+        </div>
+        <div class="nav-item" id="nav-urgent" onclick="openUrgent()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L17.82 22 12 18.27 6.18 22 7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          Urgentes
+          <span class="nav-badge red" id="badge-urgent">0</span>
+        </div>
+        <div class="nav-item" id="nav-spam" onclick="openSpam()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 6h18"/><path d="M8 6l4 12"/><path d="M16 6l-4 12"/></svg>
+          Spam
+          <span class="nav-badge" id="badge-spam">0</span>
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-label">Carpetas</div>
+        <div id="folder-list"></div>
+      </div>
+
+      <div class="sidebar-footer">
+        <div class="s-user">
+          <div class="s-avatar">PG</div>
+          <div>
+            <div class="s-user-name">Pablo García</div>
+            <div class="s-user-email">p.garcia@usal.es</div>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- CENTER -->
+    <div class="center">
+      <div class="topbar">
+        <div class="topbar-title" id="topbar-title">Bandeja de entrada</div>
+        <div class="search-box">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input type="text" placeholder="Buscar correo..." oninput="onSearch(event)">
+        </div>
+        <button class="btn primary" style="white-space: nowrap;" onclick="openCompose()">Redactar</button>
+      </div>
+
+      <div class="center-content">
+
+        <!-- HOME VIEW -->
+        <div id="view-home">
+          <!-- Priority banner (rendered dynamically) -->
+          <div id="priority-banner-container"></div>
+
+          <!-- Folders -->
+          <div class="folders-title">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+            Tus carpetas
+          </div>
+          <div class="folders-grid" id="home-folder-grid"></div>
+
+          <div class="folders-title" style="margin-top:24px;">Últimos correos</div>
+          <div class="email-list" id="home-email-list"></div>
+        </div>
+
+        <!-- FOLDER VIEW -->
+        <div id="view-folder">
+          <div class="folder-header">
+            <button class="btn-back" onclick="goHome()">← Volver</button>
+            <div class="folder-header-title" id="folder-title"></div>
+            <div class="folder-actions">
+              <button class="btn" onclick="toggleFolderPriority()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                <span id="priority-folder-label">Marcar prioritaria</span>
+              </button>
+              <button class="btn primary" onclick="resumirTodos()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                Resumir todos
+              </button>
+              <button class="btn" onclick="ordenarPorPrioridad()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                Ordenar
+              </button>
+              <button class="btn danger" onclick="eliminarCarpeta()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+                Eliminar
+              </button>
+            </div>
+          </div>
+          <div class="email-list" id="folder-email-list"></div>
+        </div>
+
+        <!-- EMAIL DETAIL VIEW -->
+        <div id="view-email">
+          <div class="folder-header">
+            <button class="btn-back" id="back-from-email" onclick="backFromEmail()">← Volver</button>
+          </div>
+          <div class="email-detail-card">
+            <div class="email-detail-header">
+              <div class="email-detail-subject" id="detail-subject"></div>
+              <div class="email-detail-meta" id="detail-meta"></div>
+            </div>
+            <div class="email-detail-actions">
+              <button class="btn primary" onclick="resumirUno()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+                Resumir correo con IA
+              </button>
+              <button class="btn" onclick="responder()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="9 17 4 12 9 7"/><path d="M20 18v-2a4 4 0 0 0-4-4H4"/></svg>
+                Responder
+              </button>
+              <button class="btn" onclick="marcarPrioritarioEmail()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" id="star-icon"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                <span id="star-label">Marcar prioritario</span>
+              </button>
+              <button class="btn" onclick="moveEmail()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7h4l3 9 4-6 5 6h3"/><path d="M14 2h6v6"/></svg>
+                Mover
+              </button>
+              <button class="btn danger" onclick="markSpam()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 6h18"/><path d="M8 6l4 12"/><path d="M16 6l-4 12"/></svg>
+                Spam
+              </button>
+              <button class="btn" id="mark-done-btn" onclick="markDone()" style="display:none;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="20 6 9 17 4 12"/></svg>
+                Marcar como hecho
+              </button>
+            </div>
+            <div class="email-detail-body" id="detail-body"></div>
+            <div class="reply-box" id="reply-box" style="display:none;">
+              <div class="reply-box-header">
+                <div>
+                  <div class="reply-box-title">Responder</div>
+                  <div class="reply-box-sub">Selecciona una respuesta rápida o escribe tu mensaje</div>
+                </div>
+                <button class="btn" onclick="closeReplyComposer()">Cerrar</button>
+              </div>
+              <div class="reply-templates" id="reply-templates"></div>
+              <textarea id="reply-editor" class="reply-textarea" placeholder="Escribe tu respuesta aquí..."></textarea>
+              <div class="reply-actions">
+                <button class="btn primary" onclick="sendReply()">Enviar respuesta</button>
+                <button class="btn" onclick="closeReplyComposer()">Cancelar</button>
+              </div>
+            </div>
+            <div id="ai-panel-container"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div class="right-panel">
+      <div class="rp-section">
+        <div class="rp-title">Mi cuenta</div>
+        <div class="rp-avatar">PG</div>
+        <div class="rp-name">Pablo García</div>
+        <div class="rp-email">p.garcia@usal.es</div>
+        <button class="rp-btn" onclick="verPerfil()">Ver perfil</button>
+        <button class="rp-btn" onclick="cambiarCuenta()">Cambiar cuenta</button>
+      </div>
+
+      <div class="rp-section">
+        <div class="rp-title">Estadísticas</div>
+        <div class="rp-stat"><span class="rp-stat-label">Total correos</span><span class="rp-stat-val" id="stat-total">12</span></div>
+        <div class="rp-stat"><span class="rp-stat-label">No leídos</span><span class="rp-stat-val" id="stat-unread">5</span></div>
+        <div class="rp-stat"><span class="rp-stat-label">Prioritarios</span><span class="rp-stat-val" id="stat-priority">3</span></div>
+        <div class="rp-stat"><span class="rp-stat-label">Spam</span><span class="rp-stat-val" id="stat-spam">0</span></div>
+        <div class="rp-stat"><span class="rp-stat-label">Carpetas</span><span class="rp-stat-val" id="stat-folders">4</span></div>
+        <button class="rp-btn" onclick="createFolder()">Crear carpeta</button>
+      </div>
+      <div class="rp-section">
+        <div class="rp-title">Asistente IA</div>
+        <div class="rp-ai-item" onclick="sugerenciaIA('Resumir todos los correos no leídos')"><strong>💡 Sugerencia</strong>Tienes 5 correos sin leer. ¿Quieres un resumen?</div>
+        <div class="rp-ai-item" onclick="sugerenciaIA('Mostrar correos urgentes de hoy')"><strong>⚡ Urgente</strong>El TFG vence el viernes. Revisa el correo del Dr. Martínez.</div>
+        <div class="rp-ai-item" onclick="sugerenciaIA('Organizar correos por prioridad automáticamente')"><strong>🗂 Organizar</strong>Auto-organizar correos por prioridad.</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div id="profile-modal">
+  <div class="profile-modal-card">
+    <div class="profile-modal-header">
+      <div>
+        <div class="profile-modal-title">Perfil de usuario</div>
+        <span id="profile-modal-account" style="font-size:12px;color:var(--text3);">Cuenta activa:</span>
+      </div>
+      <button class="profile-modal-close" onclick="closeProfileModal()">×</button>
+    </div>
+    <div class="profile-modal-row">
+      <div><strong>Nombre</strong><br><span id="profile-modal-name">Pablo García</span></div>
+      <div><strong>Rol</strong><br><span id="profile-modal-role">Estudiante de Ingeniería Informática</span></div>
+      <div><strong>Universidad</strong><br><span id="profile-modal-org">Universidad de Salamanca</span></div>
+      <div><strong>Configuración</strong><br><span id="profile-modal-config">Notificaciones activas · Almacenamiento 14.3/15 GB</span></div>
+    </div>
+    <div class="profile-modal-actions">
+      <button class="btn" onclick="closeProfileModal()">Cerrar</button>
+      <button class="btn" onclick="editCurrentProfile()">Editar perfil</button>
+      <button class="btn primary" onclick="cambiarCuenta()">Cerrar sesión</button>
+    </div>
+  </div>
+</div>
+
+<div id="compose-modal">
+  <div class="compose-card">
+    <div class="compose-header">
+      <div class="compose-title">Redactar nuevo correo</div>
+      <button class="compose-close" onclick="closeCompose()">×</button>
+    </div>
+    <div class="compose-body">
+      <div>
+        <label>Para</label>
+        <input type="email" id="compose-to" placeholder="destinatario@correo.com">
+      </div>
+      <div>
+        <label>Asunto</label>
+        <input type="text" id="compose-subject" placeholder="Asunto del mensaje">
+      </div>
+      <div>
+        <label>Carpeta destino</label>
+        <select id="compose-folder"></select>
+      </div>
+      <div>
+        <label>Mensaje</label>
+        <textarea id="compose-body" placeholder="Escribe tu mensaje aquí..."></textarea>
+        <div class="reply-templates" id="compose-templates" style="margin-top:10px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;"></div>
+      </div>
+    </div>
+    <div class="compose-actions">
+      <button class="btn" onclick="closeCompose()">Cancelar</button>
+      <button class="btn primary" onclick="sendNewEmail()">Enviar</button>
+    </div>
+  </div>
+</div>
+
+<div id="profile-setup-modal" style="display:none;">
+  <div class="profile-modal-card">
+    <div class="profile-modal-header">
+      <div>
+        <div class="profile-modal-title">Configura tu perfil</div>
+        <span style="font-size:12px;color:var(--text3);" id="setup-email">Cuenta:</span>
+      </div>
+      <button class="profile-modal-close" onclick="closeProfileSetup()">×</button>
+    </div>
+    <div class="profile-modal-row">
+      <div>
+        <label class="input-label">Correo electrónico</label>
+        <input id="setup-email-input" type="email" placeholder="nombre@correo.com">
+      </div>
+      <div>
+        <label class="input-label">Nombre</label>
+        <input id="setup-name" placeholder="Tu nombre">
+      </div>
+      <div>
+        <label class="input-label">Rol</label>
+        <input id="setup-role" placeholder="Tu rol / puesto">
+      </div>
+      <div>
+        <label class="input-label">Universidad / Organización</label>
+        <input id="setup-org" placeholder="Universidad / Empresa">
+      </div>
+      <div>
+        <label class="input-label">Contraseña (crear o cambiar)</label>
+        <input id="setup-pass" type="password" placeholder="Nueva contraseña">
+      </div>
+      <div style="grid-column:1 / -1;">
+        <label class="input-label">Reglas de prioridad (personaliza según tus respuestas)</label>
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;">
+          <label><input type="checkbox" id="setup-pri-work"> Priorizar correos de Trabajo</label>
+          <label><input type="checkbox" id="setup-pri-people"> Priorizar correos de contactos personales</label>
+        </div>
+        <div>
+          <label class="input-label">Palabras clave (separadas por comas)</label>
+          <input id="setup-pri-keywords" placeholder="ej. urgente, entrega, revisión">
+        </div>
+      </div>
+    </div>
+    <div class="profile-modal-actions">
+      <button class="btn" onclick="closeProfileSetup()">Cancelar</button>
+      <button class="btn primary" onclick="saveProfileSetup()">Guardar perfil</button>
+    </div>
+  </div>
+</div>
+
+<div id="move-modal" style="display:none;">
+  <div class="profile-modal-card">
+    <div class="profile-modal-header">
+      <div class="profile-modal-title">Mover correo</div>
+      <button class="profile-modal-close" onclick="closeMoveModal()">×</button>
+    </div>
+    <div class="profile-modal-row">
+      <div>
+        <label class="input-label">Selecciona carpeta destino</label>
+        <select id="move-folder-select"></select>
+      </div>
+    </div>
+    <div class="profile-modal-actions">
+      <button class="btn" onclick="closeMoveModal()">Cancelar</button>
+      <button class="btn primary" onclick="doMoveEmail()">Mover</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── DATA ───
+const FOLDERS = {
+  trabajo: {
+    name: 'Trabajo', icon: '💼', color: '#e8ecff', textColor: 'var(--accent)',
+    emails: [
+      { id:1, sender:'Dr. Martínez López', email:'martinez@usal.es', subject:'Revisión del TFG — Entrega urgente', preview:'Necesito que me envíes el borrador antes del viernes...', body:`Hola Pablo,\n\nTe escribo porque necesito que me envíes el borrador del TFG antes del próximo viernes a las 14:00h. Es imprescindible que la introducción y el marco teórico estén completos para poder hacer la revisión a tiempo.\n\nTambién te recuerdo que debes incluir la bibliografía en formato APA y que la extensión no debe superar las 80 páginas.\n\nQuedo a tu disposición para cualquier duda.\n\nSaludos,\nDr. Martínez López`, time:'09:14', unread:true, priority:true, dueDays:3 },
+      { id:2, sender:'Secretaría USAL', email:'secretaria@usal.es', subject:'Convocatoria extraordinaria — Actas de calificación', preview:'Se recuerda a todos los estudiantes que el plazo...', body:`Estimados estudiantes,\n\nSe recuerda que el plazo para la revisión de actas de la convocatoria ordinaria finaliza el 28 de mayo de 2026.\n\nLas solicitudes deben presentarse a través del portal del alumno. No se aceptarán solicitudes por correo electrónico.\n\nFecha de publicación de calificaciones definitivas: 10 de junio de 2026.\n\nAtentamente,\nSecretaría General — Universidad de Salamanca`, time:'Lun', unread:true, priority:true, dueDays:7 },
+      { id:3, sender:'GitHub', email:'noreply@github.com', subject:'[prioritz-prototype] Pull request #7 merged', preview:'The pull request feat: add AI summary endpoint has been merged...', body:`Hi pablo-garcia,\n\nThe pull request "feat: add AI summary endpoint" has been successfully merged into main by your collaborator.\n\n3 files changed, +284 −12 lines\n\nCommit: a3f7c91\n\nYou can view the changes at: github.com/pgarcia/prioritz/pull/7`, time:'Ayer', unread:false, priority:false },
+      { id:4, sender:'Prof. García Sánchez', email:'garcia.sanchez@usal.es', subject:'Cambio de horario — Tutoría 22 mayo', preview:'Estimados alumnos, os informo de que la tutoría del jueves...', body:`Estimados alumnos,\n\nOs informo de que la tutoría del próximo jueves 22 de mayo queda cancelada. Se traslada al viernes 23 de mayo a las 11:00h en el despacho 214.\n\nSi alguien no puede asistir en ese horario, contactadme por correo.\n\nSaludos,\nProf. García Sánchez`, time:'Dom', unread:true, priority:false },
+      { id:5, sender:'Google Workspace', email:'noreply@google.com', subject:'Almacenamiento de Drive casi lleno (87%)', preview:'Tu cuenta de Google está usando 14,3 GB de 15 GB...', body:`Hola Pablo,\n\nTu cuenta de Google está usando 14,3 GB de los 15 GB disponibles (87%).\n\nCuando el almacenamiento esté lleno, no podrás enviar ni recibir correos.\n\nSugerencia: Vacía la papelera de Drive y elimina correos con archivos adjuntos grandes.`, time:'Vie', unread:false, priority:false }
+    ]
+  },
+  personal: {
+    name: 'Personal', icon: '👤', color: '#ebfbee', textColor: 'var(--green)',
+    emails: [
+      { id:6, sender:'Lucía Fernández', email:'lucia.fdz@gmail.com', subject:'Quedada del viernes — ¿te apuntas?', preview:'Hola! Estamos pensando en quedar el viernes por la tarde...', body:`Hola Pablo!\n\nEstamos pensando en quedar el viernes por la tarde, sobre las 18h, en el bar de siempre cerca de la facultad. Se apuntan Marcos, Clara y yo.\n\n¿Puedes venir? Si tienes plan ya, dímelo.\n\nUn abrazo,\nLucía`, time:'Ayer', unread:true, priority:false },
+      { id:7, sender:'Carlos Ruiz', email:'c.ruiz@gmail.com', subject:'Re: Apuntes de IPO — te los mando', preview:'Hola! Te adjunto los apuntes del tema 5 que me pediste...', body:`Hola Pablo,\n\nTe mando los apuntes del tema 5 de IPO que me pediste. Los he completado con mis anotaciones de clase y algún esquema adicional.\n\nSi los imprimes, recuerda que el diagrama de la página 12 es importante para la evaluación heurística.\n\n¡Mucha suerte con el trabajo final!\n\nCarlos`, time:'Vie', unread:false, priority:false },
+      { id:8, sender:'Amazon', email:'auto-confirm@amazon.es', subject:'Tu pedido ha sido enviado — #305-7291842', preview:'Tu pedido de "Clean Code" ha salido de nuestro almacén...', body:`Hola Pablo,\n\nTu pedido ha salido de nuestro almacén y está en camino.\n\nPedido: #305-7291842\nProducto: Clean Code: A Handbook of Agile Software Craftsmanship\nFecha estimada de entrega: 21 de mayo de 2026\nTransportista: DHL — Seguimiento: 1Z999AA10123456784`, time:'Lun', unread:false, priority:false }
+    ]
+  },
+  finanzas: {
+    name: 'Finanzas', icon: '💰', color: '#fff9db', textColor: 'var(--amber)',
+    emails: [
+      { id:9, sender:'Banco Santander', email:'noreply@santander.es', subject:'Tu extracto de cuenta — Mayo 2026', preview:'Ya tienes disponible tu extracto mensual. Saldo actual...', body:`Estimado cliente,\n\nTu extracto de cuenta del mes de mayo ya está disponible en tu área personal.\n\nSaldo actual: 1.842,50 €\nMovimientos este mes: 23\nPróximo cargo domiciliado: 15 jun — Netflix 15,99 €\n\nAccede a tu banca online para consultar el detalle completo.`, time:'08:30', unread:true, priority:true, dueDays:4 },
+      { id:10, sender:'Hacienda — AEAT', email:'info@agenciatributaria.es', subject:'Notificación: Borrador Renta 2025 disponible', preview:'Su borrador de declaración de la renta correspondiente...', body:`Estimado contribuyente,\n\nSu borrador de declaración del IRPF correspondiente al ejercicio fiscal 2025 ya está disponible en la Sede Electrónica de la Agencia Tributaria.\n\nResultado de su declaración: A DEVOLVER — 342,80 €\n\nPlazo para confirmar o modificar: hasta el 30 de junio de 2026.`, time:'Sáb', unread:true, priority:false }
+    ]
+  },
+  social: {
+    name: 'Social', icon: '👥', color: '#f3f0ff', textColor: 'var(--purple)',
+    emails: [
+      { id:11, sender:'LinkedIn', email:'jobs@linkedin.com', subject:'5 nuevas ofertas de empleo para ti', preview:'Desarrollador Full Stack en Madrid — React & Node.js...', body:`Pablo, estas ofertas coinciden con tu perfil:\n\n1. Desarrollador Full Stack — Accenture, Madrid\n2. Junior AI Engineer — Telefónica, Remoto\n3. Frontend Developer React — Banco BBVA, Madrid\n4. Ingeniero de Software — Indra, Sevilla\n5. Data Engineer Python — Repsol, Madrid`, time:'Ayer', unread:false, priority:false },
+      { id:12, sender:'Spotify', email:'noreply@spotify.com', subject:'Tu resumen de mayo — ¡Ya disponible!', preview:'Este mes has escuchado 42 horas de música...', body:`Hola Pablo,\n\nEste mes has escuchado:\n• 42 horas de música\n• Artista más escuchado: Vetusta Morla\n• Canción más repetida: "Golpe de suerte"\n• Género favorito: Indie español\n\nTu racha: 23 días consecutivos 🔥`, time:'Dom', unread:false, priority:false }
+    ]
+  }
+};
+
+const REPLY_TEMPLATES = [
+  'Gracias por la información. Lo reviso y te escribo en cuanto tenga novedades.',
+  'Gracias por avisar. Estoy trabajando en ello y te confirmo en breve.',
+  'Recibido. Te envío el documento solicitado antes del final del día.',
+  'Perfecto, lo dejo confirmado. Avísame si hay algún cambio.'
+];
+
+let currentFolder = null;
+let currentEmail = null;
+let currentEmailFolder = null;
+let currentView = 'home';
+let previousView = 'home';
+let currentSearchQuery = '';
+let folderIsPriority = { trabajo: true, personal: false, finanzas: false, social: false };
+let aibusy = false;
+
+function getAllEmails() {
+  return Object.entries(FOLDERS).flatMap(([key, folder]) => folder.emails.map(email => ({ ...email, folderKey: key })));
+}
+
+function getVisibleEmailList(emails, includeSpam = false) {
+  return emails.filter(email => includeSpam || !email.spam);
+}
+
+function updateStats() {
+  const all = getAllEmails();
+  const visible = getVisibleEmailList(all);
+  const unread = visible.filter(e => e.unread).length;
+  const priority = visible.filter(e => e.priority).length;
+  const urgent = visible.filter(e => e.priority).length;
+  const spam = all.filter(e => e.spam).length;
+  document.getElementById('badge-unread').textContent = unread;
+  document.getElementById('badge-urgent').textContent = urgent;
+  document.getElementById('badge-spam').textContent = spam;
+  document.getElementById('stat-total').textContent = visible.length;
+  document.getElementById('stat-unread').textContent = unread;
+  document.getElementById('stat-priority').textContent = priority;
+  document.getElementById('stat-spam').textContent = spam;
+  document.getElementById('stat-folders').textContent = Object.keys(FOLDERS).length;
+  document.querySelector('#nav-all .nav-badge').textContent = visible.length;
+  // update dynamic priority banner
+  renderPriorityBanner();
+}
+
+function renderPriorityBanner() {
+  const container = document.getElementById('priority-banner-container');
+  if (!container) return;
+  const emails = getVisibleEmailList(getAllEmails()).filter(e => e.priority && !e.spam);
+  if (!emails.length) { container.innerHTML = ''; return; }
+  // choose most urgent: smallest dueDays, then earliest id
+  emails.sort((a,b) => sortByPriorityUrgency(a,b));
+  const top = emails[0];
+  container.innerHTML = `
+    <div class="priority-banner" onclick="openEmail(${top.id})">
+      <div class="priority-dot"></div>
+      <div class="priority-info">
+        <div class="priority-label">🔴 Correo más prioritario</div>
+        <div class="priority-subject">${escapeHtml(top.subject)}</div>
+        <div class="priority-from">${escapeHtml(top.sender)} • ${escapeHtml(top.email)}</div>
+      </div>
+      <div class="priority-arrow">→</div>
+    </div>
+  `;
+}
+
+function escapeHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function renderEmailCollection(emails, containerId) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  if (emails.length === 0) {
+    container.innerHTML = '<div style="padding:20px;color:var(--text3);text-align:center;">No hay correos para mostrar.</div>';
+    return;
+  }
+  container.innerHTML = emails.map(email => {
+    const dueHtml = email.dueDays ? `
+      <div class="due-bar-wrapper">
+        <div class="due-bar"><div class="due-bar-fill" style="width:${Math.max(0, Math.min(100, ((10 - email.dueDays) / 10) * 100))}%"></div></div>
+        <span class="due-days">Quedan ${escapeHtml(email.dueDays)}</span>
+      </div>` : '';
+    return `
+      <div class="email-item${email.priority ? ' priority-email' : ''}" onclick="openEmail(${email.id})">
+        ${email.unread ? '<div class="email-unread-dot"></div>' : '<div style="width:8px;flex-shrink:0"></div>'}
+        <div class="email-info">
+          <div class="email-row1">
+            <span class="email-sender" style="${email.unread ? 'color:var(--text)' : ''}">${escapeHtml(email.sender)}</span>
+            <span class="email-time">${escapeHtml(email.time)}</span>
+            ${email.priority ? '<span class="tag priority">🔴 Prioritario</span>' : ''}
+          </div>
+          <div class="email-subject">${escapeHtml(email.subject)}</div>
+          <div class="email-preview">${escapeHtml(email.preview)}</div>
+          ${dueHtml}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function renderHomeFolders() {
+  const container = document.getElementById('home-folder-grid');
+  if (!container) return;
+  container.innerHTML = Object.entries(FOLDERS).map(([key, folder]) => {
+    const emails = getVisibleEmailList(folder.emails);
+    const unreadCount = emails.filter(e => e.unread).length;
+    const totalCount = emails.length;
+    const priorityClass = folderIsPriority[key] ? ' priority-folder' : '';
+    const starLabel = folderIsPriority[key] ? '<div class="folder-card-badge">★ Prioritaria</div>' : '';
+    return `
+      <div class="folder-card${priorityClass}" onclick="openFolder('${key}')">
+        ${starLabel}
+        <div class="folder-icon" style="background:${folder.color};color:${folder.textColor}">${folder.icon}</div>
+        <div class="folder-name">${folder.name}</div>
+        <div class="folder-count">${totalCount} correos</div>
+        <div class="folder-unread" style="background:${folder.color};color:${folder.textColor}">${unreadCount}</div>
+      </div>`;
+  }).join('');
+}
+
+function renderHomeRecent() {
+  const emails = getVisibleEmailList(getAllEmails()).slice(0, 6);
+  renderEmailCollection(emails, 'home-email-list');
+}
+
+function renderSidebarFolders() {
+  const container = document.getElementById('folder-list');
+  if (!container) return;
+  container.innerHTML = Object.entries(FOLDERS).map(([key, folder]) => `
+    <div class="nav-item" id="nav-folder-${key}" onclick="openFolder('${key}')">
+      <span style="display:flex;align-items:center;gap:8px;">
+        <span>${folder.icon}</span>
+        ${folder.name}
+      </span>
+    </div>
+  `).join('');
+}
+
+function clearActiveNav() {
+  document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+}
+
+// ─── LOGIN ───
+function checkLogin() {
+  const email = document.getElementById('input-email').value;
+  const pass = document.getElementById('input-pass').value;
+  const validEmail = email.includes('@') && email.includes('.');
+  const validPass = pass.length >= 4;
+
+  document.getElementById('tick-email').textContent = validEmail ? '✅' : '';
+  document.getElementById('tick-email').classList.toggle('show', validEmail);
+  document.getElementById('tick-pass').textContent = validPass ? '✅' : '';
+  document.getElementById('tick-pass').classList.toggle('show', validPass);
+
+  const btn = document.getElementById('btn-login');
+  btn.classList.toggle('ready', validEmail && validPass);
+}
+
+function doLogin() {
+  const btn = document.getElementById('btn-login');
+  if (!btn.classList.contains('ready')) return;
+  const email = document.getElementById('input-email').value.trim().toLowerCase();
+  const pass = document.getElementById('input-pass').value || '';
+  const key = 'prioritz_profile_' + email;
+  const raw = localStorage.getItem(key);
+  if (!raw) {
+    showToast('Cuenta no encontrada. Crea una cuenta primero.');
+    openProfileSetupFromLogin();
+    return;
+  }
+  const profile = JSON.parse(raw);
+  if ((profile.password || '') !== pass) { showToast('Contraseña incorrecta.'); return; }
+  // successful auth
+  showScreen('loading');
+  runLoading(email);
+}
+
+function runLoading(email) {
+  const steps = ['Conectando con el servidor...', 'Autenticando usuario...', 'Cargando correos...', 'Organizando carpetas...', 'Listo!'];
+  const bar = document.getElementById('loading-bar');
+  const txt = document.getElementById('loading-text');
+  let i = 0;
+  const interval = setInterval(() => {
+    bar.style.width = ((i+1)/steps.length * 100) + '%';
+    txt.textContent = steps[i];
+    i++;
+    if (i >= steps.length) { clearInterval(interval); setTimeout(() => { showScreen('app'); goHome(); postLoginInit(email); }, 400); }
+  }, 500);
+}
+
+function postLoginInit(email) {
+  if (!email) return;
+  // load profile if exists, otherwise request setup
+  const key = 'prioritz_profile_' + email;
+  const raw = localStorage.getItem(key);
+  if (!raw) {
+    openProfileSetup(email);
+  } else {
+    const p = JSON.parse(raw);
+    applyProfileToUI(p);
+    // apply saved priority rules on login
+    setTimeout(() => applyPriorityRules(), 100);
+  }
+}
+
+function getProfileByEmail(email) {
+  if (!email) return null;
+  const raw = localStorage.getItem('prioritz_profile_' + email);
+  return raw ? JSON.parse(raw) : null;
+}
+
+function prepareProfileSetup(email) {
+  const profile = getProfileByEmail(email);
+  const account = email || (profile ? profile.email : '');
+  document.getElementById('setup-email').textContent = 'Cuenta: ' + account;
+  document.getElementById('setup-email-input').value = account;
+  document.getElementById('setup-email-input').disabled = !!profile;
+  document.getElementById('setup-name').value = profile ? profile.name : '';
+  document.getElementById('setup-role').value = profile ? profile.role : '';
+  document.getElementById('setup-org').value = profile ? profile.org : '';
+  document.getElementById('setup-pass').value = '';
+  document.getElementById('setup-pri-work').checked = profile ? !!profile.prioritize_work : false;
+  document.getElementById('setup-pri-people').checked = profile ? !!profile.prioritize_people : false;
+  document.getElementById('setup-pri-keywords').value = profile ? profile.prioritize_keywords || '' : '';
+  document.getElementById('profile-setup-modal').style.display = 'flex';
+}
+
+function openProfileSetup(email) {
+  prepareProfileSetup(email);
+}
+
+function openProfileSetupFromLogin() {
+  const email = document.getElementById('input-email').value.trim().toLowerCase();
+  if (!email) {
+    showToast('Introduce un correo válido antes de crear cuenta.');
+    return;
+  }
+  prepareProfileSetup(email);
+}
+
+function editCurrentProfile() {
+  const profile = window.currentProfile;
+  if (!profile) return;
+  prepareProfileSetup(profile.email);
+}
+
+function closeProfileSetup() { document.getElementById('profile-setup-modal').style.display = 'none'; }
+
+function saveProfileSetup() {
+  const email = document.getElementById('setup-email-input').value.trim().toLowerCase();
+  const name = document.getElementById('setup-name').value.trim();
+  const role = document.getElementById('setup-role').value.trim();
+  const org = document.getElementById('setup-org').value.trim();
+  const pass = document.getElementById('setup-pass').value;
+  const priWork = !!document.getElementById('setup-pri-work').checked;
+  const priPeople = !!document.getElementById('setup-pri-people').checked;
+  const priKeywords = document.getElementById('setup-pri-keywords').value.trim();
+  if (!email || !name) { showToast('Rellena al menos tu correo y tu nombre.'); return; }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showToast('Introduce un correo válido.'); return; }
+  const existing = getProfileByEmail(email);
+  if (!existing && (!pass || pass.length < 4)) { showToast('La contraseña debe tener al menos 4 caracteres.'); return; }
+  const password = pass || (existing ? existing.password : '');
+  if (!password) { showToast('La contraseña es obligatoria.'); return; }
+  const key = 'prioritz_profile_' + email;
+  const profile = { email, name, role, org, password, prioritize_work: priWork, prioritize_people: priPeople, prioritize_keywords: priKeywords };
+  localStorage.setItem(key, JSON.stringify(profile));
+  applyProfileToUI(profile);
+  updateProfileModal(profile);
+  closeProfileSetup();
+  showToast('Perfil guardado. Iniciando sesión...');
+  // apply rules immediately to existing emails
+  applyPriorityRules();
+  // prefill login inputs so user can sign in and automatically log in
+  try {
+    document.getElementById('input-email').value = profile.email || '';
+    document.getElementById('input-pass').value = profile.password || '';
+    checkLogin();
+    const btn = document.getElementById('btn-login');
+    if (btn && btn.classList.contains('ready')) {
+      doLogin();
+    }
+  } catch (e) {}
+}
+
+function applyProfileToUI(profile) {
+  window.currentProfile = profile || null;
+  document.querySelectorAll('.rp-name').forEach(n => n.textContent = profile.name || 'Usuario');
+  const rpEmail = document.querySelectorAll('.rp-email');
+  rpEmail.forEach(e => e.textContent = profile.email || '');
+  updateProfileModal(profile);
+}
+
+function updateProfileModal(profile) {
+  if (!profile) return;
+  const account = document.getElementById('profile-modal-account');
+  const name = document.getElementById('profile-modal-name');
+  const role = document.getElementById('profile-modal-role');
+  const org = document.getElementById('profile-modal-org');
+  const config = document.getElementById('profile-modal-config');
+  if (account) account.textContent = 'Cuenta activa: ' + (profile.email || '');
+  if (name) name.textContent = profile.name || 'Usuario';
+  if (role) role.textContent = profile.role || '-';
+  if (org) org.textContent = profile.org || '-';
+  if (config) config.textContent = 'Preferencias guardadas';
+}
+
+function applyPriorityRules() {
+  const profile = window.currentProfile;
+  if (!profile) return;
+  const keywords = (profile.prioritize_keywords || '').split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+  for (const [key, folder] of Object.entries(FOLDERS)) {
+    for (const email of folder.emails) {
+      if (email.spam) continue;
+      let match = false;
+      if (profile.prioritize_work && key === 'trabajo') match = true;
+      if (profile.prioritize_people && email.sender && !/noreply|no-reply|auto-confirm/i.test(email.email) && email.sender !== 'Tú') match = true;
+      if (!match && keywords.length) {
+        const text = ((email.subject||'') + ' ' + (email.body||'')).toLowerCase();
+        if (keywords.some(k => text.includes(k))) match = true;
+      }
+      if (match && !email.priority) {
+        email.priority = true;
+        email.dueDays = email.dueDays || 7;
+        email.autoPriority = true;
+      } else if (!match && email.autoPriority) {
+        email.priority = false;
+        email.dueDays = null;
+        email.autoPriority = false;
+      }
+    }
+  }
+  updateStats();
+}
+
+// ─── SCREENS ───
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+  document.getElementById('screen-' + name).classList.remove('hidden');
+}
+
+// ─── NAVIGATION ───
+function goHome() {
+  currentView = 'home';
+  currentFolder = null; currentEmail = null;
+  document.getElementById('view-home').style.display = 'block';
+  document.getElementById('view-folder').style.display = 'none';
+  document.getElementById('view-email').style.display = 'none';
+  document.getElementById('topbar-title').textContent = 'Bandeja de entrada';
+  renderSidebarFolders();
+  renderHomeFolders();
+  clearActiveNav();
+  document.getElementById('nav-all').classList.add('active');
+  renderHomeRecent();
+  updateStats();
+  if (document.getElementById('mark-done-btn')) document.getElementById('mark-done-btn').style.display = currentEmail && currentEmail.priority ? 'inline-flex' : 'none';
+}
+
+function openFolder(key) {
+  currentView = 'folder';
+  currentFolder = key;
+  const f = FOLDERS[key];
+  document.getElementById('view-home').style.display = 'none';
+  document.getElementById('view-folder').style.display = 'block';
+  document.getElementById('view-email').style.display = 'none';
+  document.getElementById('folder-title').textContent = f.icon + ' ' + f.name;
+  document.getElementById('topbar-title').textContent = f.name;
+  renderSidebarFolders();
+  document.getElementById('priority-folder-label').textContent = folderIsPriority[key] ? '★ Prioritaria' : 'Marcar prioritaria';
+  clearActiveNav();
+  document.getElementById('nav-all').classList.remove('active');
+  const folderNav = document.getElementById('nav-folder-' + key);
+  if (folderNav) folderNav.classList.add('active');
+  renderFolderEmails(key);
+  updateStats();
+}
+
+function renderFolderEmails(key) {
+  const f = FOLDERS[key];
+  const container = document.getElementById('folder-email-list');
+  if (!container) return;
+  const emails = getVisibleEmailList(f.emails);
+  const received = emails.filter(e => e.sender !== 'Tú');
+  const sent = emails.filter(e => e.sender === 'Tú');
+  const renderList = (list) => {
+    if (list.length === 0) return '<div style="padding:12px;color:var(--text3)">No hay mensajes.</div>';
+    return list.map(email => {
+      const dueHtml = email.dueDays ? `
+        <div class="due-bar-wrapper">
+          <div class="due-bar"><div class="due-bar-fill" style="width:${Math.max(0, Math.min(100, ((10 - email.dueDays) / 10) * 100))}%"></div></div>
+          <span class="due-days">Quedan ${escapeHtml(email.dueDays)}</span>
+        </div>` : '';
+      return `
+      <div class="email-item${email.priority ? ' priority-email' : ''}" onclick="openEmail(${email.id})">
+        ${email.unread ? '<div class="email-unread-dot"></div>' : '<div style="width:8px;flex-shrink:0"></div>'}
+        <div class="email-info">
+          <div class="email-row1">
+            <span class="email-sender" style="${email.unread ? 'color:var(--text)' : ''}">${escapeHtml(email.sender)}</span>
+            <span class="email-time">${escapeHtml(email.time)}</span>
+            ${email.priority ? '<span class="tag priority">🔴 Prioritario</span>' : ''}
+          </div>
+          <div class="email-subject">${escapeHtml(email.subject)}</div>
+          <div class="email-preview">${escapeHtml(email.preview)}</div>
+          ${dueHtml}
+        </div>
+      </div>`;
+    }).join('');
+  };
+  container.innerHTML = `
+    <div style="margin-bottom:14px;"><strong>Recibidos</strong>${received.length? '':' · vacío'}</div>
+    ${renderList(received)}
+    <div style="margin:18px 0 8px;"><strong>Enviados</strong>${sent.length? '':' · vacío'}</div>
+    ${renderList(sent)}
+  `;
+}
+
+function openEmail(id) {
+  previousView = currentView;
+  currentView = 'email';
+  for (const [key, f] of Object.entries(FOLDERS)) {
+    const email = f.emails.find(e => e.id === id);
+    if (email) {
+      currentEmail = email;
+      currentEmailFolder = key;
+          break;
+    }
+  }
+  if (!currentEmail) return;
+
+  if (currentView === 'unread' && currentEmail.unread) {
+    currentEmail.unread = false;
+  }
+
+  document.getElementById('view-home').style.display = 'none';
+  document.getElementById('view-folder').style.display = 'none';
+  document.getElementById('view-email').style.display = 'block';
+  document.getElementById('topbar-title').textContent = currentEmail.subject.slice(0, 40) + '...';
+
+  document.getElementById('detail-subject').textContent = currentEmail.subject;
+  document.getElementById('detail-meta').innerHTML = `
+    <div class="meta-chip">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <strong>${currentEmail.sender}</strong>
+    </div>
+    <div class="meta-chip">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+      ${currentEmail.email}
+    </div>
+    ${currentEmail.priority ? '<span class="tag priority">🔴 Prioritario</span>' : ''}
+    ${currentEmail.dueDays ? `<div class="meta-chip"><strong>Quedan ${currentEmail.dueDays} días</strong></div>` : ''}
+  `;
+  document.getElementById('detail-body').innerHTML = currentEmail.body.split('\n').map(l => l.trim() ? `<p>${l}</p>` : '').join('');
+  document.getElementById('ai-panel-container').innerHTML = '<div class="ai-panel"><div class="ai-panel-header"><div class="ai-dot"></div><div class="ai-label">Funciones IA</div><button class="ai-close" onclick="closeAiPanel()">✕</button></div><div class="ai-body"><p>Las funciones de IA se mantienen como opción futura en versión 2. Por ahora puedes usar todas las demás acciones de correo.</p></div></div>';
+  document.getElementById('star-label').textContent = currentEmail.priority ? 'Quitar prioritario' : 'Marcar prioritario';
+  updateStats();
+  // show/hide mark-done button for prioritized emails
+  document.getElementById('mark-done-btn').style.display = currentEmail.priority ? 'inline-flex' : 'none';
+  showReplyComposer(false);
+}
+
+function backFromEmail() {
+  if (previousView === 'unread') { return openUnread(); }
+  if (previousView === 'urgent') { return openUrgent(); }
+  if (previousView === 'spam') { return openSpam(); }
+  if (previousView === 'search') {
+    if (currentSearchQuery) {
+      document.querySelector('.search-box input').value = currentSearchQuery;
+      return onSearch({ target: document.querySelector('.search-box input') });
+    }
+  }
+  if (previousView === 'folder' && currentFolder) { return openFolder(currentFolder); }
+  goHome();
+}
+
+function openUnread() {
+  currentView = 'unread';
+  currentFolder = null; currentEmail = null;
+  previousView = 'unread';
+  const emails = getVisibleEmailList(getAllEmails()).filter(e => e.unread);
+  document.getElementById('view-home').style.display = 'none';
+  document.getElementById('view-folder').style.display = 'block';
+  document.getElementById('view-email').style.display = 'none';
+  document.getElementById('folder-title').textContent = 'Correos no leídos';
+  document.getElementById('topbar-title').textContent = 'No leídos';
+  document.getElementById('priority-folder-label').textContent = 'Mostrar prioridad';
+  clearActiveNav();
+  document.getElementById('nav-unread').classList.add('active');
+  renderEmailCollection(emails, 'folder-email-list');
+  updateStats();
+}
+
+function onSearch(event) {
+  const query = event.target.value.trim();
+  currentSearchQuery = query;
+  const lower = query.toLowerCase();
+  if (!query) {
+    if (currentView === 'search') { goHome(); }
+    return;
+  }
+  currentView = 'search';
+  currentFolder = null; currentEmail = null;
+  const emails = getVisibleEmailList(getAllEmails()).filter(email =>
+    email.sender.toLowerCase().includes(lower) ||
+    email.subject.toLowerCase().includes(lower) ||
+    email.preview.toLowerCase().includes(lower) ||
+    email.body.toLowerCase().includes(lower)
+  );
+  document.getElementById('view-home').style.display = 'none';
+  document.getElementById('view-folder').style.display = 'block';
+  document.getElementById('view-email').style.display = 'none';
+  document.getElementById('folder-title').textContent = `Resultados de búsqueda (${emails.length})`;
+  document.getElementById('topbar-title').textContent = 'Buscar correos';
+  document.getElementById('priority-folder-label').textContent = 'Resultados';
+  clearActiveNav();
+  renderEmailCollection(emails, 'folder-email-list');
+  updateStats();
+}
+
+// ─── FOLDER ACTIONS ───
+function toggleFolderPriority() {
+  if (!currentFolder) return;
+  folderIsPriority[currentFolder] = !folderIsPriority[currentFolder];
+  const label = document.getElementById('priority-folder-label');
+  label.textContent = folderIsPriority[currentFolder] ? '★ Prioritaria' : 'Marcar prioritaria';
+  renderSidebarFolders();
+  renderHomeFolders();
+  showToast(folderIsPriority[currentFolder] ? '★ Carpeta marcada como prioritaria' : 'Carpeta desmarcada');
+}
+
+function sortByPriorityUrgency(a, b) {
+  return (b.priority - a.priority) || ((a.dueDays || 999) - (b.dueDays || 999)) || (b.unread - a.unread) || (a.id - b.id);
+}
+
+function ordenarPorPrioridad() {
+  if (currentView === 'urgent') {
+    const emails = getVisibleEmailList(getAllEmails()).filter(e => e.priority && !e.spam);
+    emails.sort(sortByPriorityUrgency);
+    renderEmailCollection(emails, 'folder-email-list');
+    showToast('✅ Correos urgentes ordenados por prioridad');
+    return;
+  }
+  if (!currentFolder) return;
+  FOLDERS[currentFolder].emails.sort(sortByPriorityUrgency);
+  renderFolderEmails(currentFolder);
+  showToast('✅ Correos ordenados por prioridad');
+}
+
+function eliminarCarpeta() {
+  showToast('⚠ Función de eliminar carpeta disponible en v2.0');
+}
+
+function marcarPrioritarioEmail() {
+  if (!currentEmail) return;
+  if (currentEmail.spam) { showToast('No se puede marcar como prioritario un correo marcado como spam.'); return; }
+  if (!currentEmail.priority) {
+    // marking as priority: ask for due days
+    const days = prompt('Días hasta la fecha límite (ej. 7):', '7');
+    const n = parseInt(days, 10);
+    if (isNaN(n) || n <= 0) { showToast('Prioridad no establecida: introduce un número válido.'); return; }
+    currentEmail.priority = true;
+    currentEmail.dueDays = n;
+    document.getElementById('star-label').textContent = 'Quitar prioritario';
+    showToast('🔴 Correo marcado como prioritario: quedan ' + n + ' días');
+  } else {
+    currentEmail.priority = false;
+    currentEmail.dueDays = null;
+    document.getElementById('star-label').textContent = 'Marcar prioritario';
+    showToast('Eliminado de prioritarios');
+  }
+  updateStats();
+}
+
+function openUrgent() {
+  currentView = 'urgent';
+  currentFolder = null; currentEmail = null;
+  previousView = 'urgent';
+  const emails = getVisibleEmailList(getAllEmails()).filter(e => e.priority && !e.spam);
+  emails.sort(sortByPriorityUrgency);
+  document.getElementById('view-home').style.display = 'none';
+  document.getElementById('view-folder').style.display = 'block';
+  document.getElementById('view-email').style.display = 'none';
+  document.getElementById('folder-title').textContent = 'Correos urgentes';
+  document.getElementById('topbar-title').textContent = 'Urgentes';
+  document.getElementById('priority-folder-label').textContent = 'Urgentes';
+  clearActiveNav();
+  document.getElementById('nav-urgent').classList.add('active');
+  renderEmailCollection(emails, 'folder-email-list');
+  updateStats();
+}
+
+function openSpam() {
+  currentView = 'spam';
+  currentFolder = null; currentEmail = null;
+  previousView = 'spam';
+  const emails = getAllEmails().filter(e => e.spam);
+  document.getElementById('view-home').style.display = 'none';
+  document.getElementById('view-folder').style.display = 'block';
+  document.getElementById('view-email').style.display = 'none';
+  document.getElementById('folder-title').textContent = 'Spam';
+  document.getElementById('topbar-title').textContent = 'Spam';
+  document.getElementById('priority-folder-label').textContent = 'Spam';
+  clearActiveNav();
+  document.getElementById('nav-spam').classList.add('active');
+  renderEmailCollection(emails, 'folder-email-list');
+  updateStats();
+}
+
+function moveEmail() {
+  if (!currentEmail || !currentEmailFolder) return;
+  // open modal with folder select
+  const sel = document.getElementById('move-folder-select');
+  sel.innerHTML = Object.entries(FOLDERS).map(([key, folder]) => `
+    <option value="${key}" ${key===currentEmailFolder? 'disabled':''}>${folder.name}</option>
+  `).join('');
+  document.getElementById('move-modal').style.display = 'flex';
+}
+
+function closeMoveModal() { document.getElementById('move-modal').style.display = 'none'; }
+
+function doMoveEmail() {
+  if (!currentEmail || !currentEmailFolder) return closeMoveModal();
+  const sel = document.getElementById('move-folder-select');
+  const normalized = sel.value;
+  if (!normalized || normalized === currentEmailFolder) { showToast('Selecciona otra carpeta válida.'); return; }
+  const from = FOLDERS[currentEmailFolder];
+  const index = from.emails.findIndex(e => e.id === currentEmail.id);
+  if (index === -1) { closeMoveModal(); return; }
+  const [email] = from.emails.splice(index, 1);
+  FOLDERS[normalized].emails.unshift(email);
+  currentEmailFolder = normalized;
+  closeMoveModal();
+  showToast(`✅ Correo movido a ${FOLDERS[normalized].name}`);
+  updateStats();
+  goHome();
+}
+
+function markSpam() {
+  if (!currentEmail) return;
+  currentEmail.spam = true;
+  currentEmail.priority = false;
+  currentEmail.unread = false;
+  showToast('🚫 Correo marcado como spam y ocultado de la bandeja principal.');
+  updateStats();
+  goHome();
+}
+
+function markDone() {
+  if (!currentEmail) return;
+  currentEmail.priority = false;
+  currentEmail.dueDays = null;
+  currentEmail.unread = false;
+  // clear autoPriority if set
+  if (currentEmail.autoPriority) currentEmail.autoPriority = false;
+  // ensure no leftover flags
+  currentEmail.spam = currentEmail.spam || false;
+  showToast('✔ Tarea marcada como realizada. Correo retirado de urgentes/prioritarios.');
+  if (document.getElementById('mark-done-btn')) document.getElementById('mark-done-btn').style.display = 'none';
+  updateStats();
+  // re-render current folder view to remove from lists
+  if (currentFolder) renderFolderEmails(currentFolder);
+  goHome();
+}
+
+function openCompose() {
+  const folderSelect = document.getElementById('compose-folder');
+  folderSelect.innerHTML = Object.entries(FOLDERS).map(([key, folder]) => `<option value="${key}">${folder.name}</option>`).join('');
+  document.getElementById('compose-to').value = '';
+  document.getElementById('compose-subject').value = '';
+  document.getElementById('compose-body').value = '';
+  // preselect folder according to profile rules
+  try {
+    if (window.currentProfile) {
+      if (window.currentProfile.prioritize_work && FOLDERS.trabajo) folderSelect.value = 'trabajo';
+      else if (window.currentProfile.prioritize_people && FOLDERS.personal) folderSelect.value = 'personal';
+    }
+  } catch(e) {}
+  // populate compose templates
+  const ctemplates = document.getElementById('compose-templates');
+  if (ctemplates) ctemplates.innerHTML = REPLY_TEMPLATES.map((t, i) => `<div class="reply-template" onclick="applyComposeTemplate(${i})">${t}</div>`).join('');
+  document.getElementById('compose-modal').style.display = 'flex';
+}
+
+function closeCompose() {
+  document.getElementById('compose-modal').style.display = 'none';
+}
+
+function sendNewEmail() {
+  const to = document.getElementById('compose-to').value.trim();
+  const subject = document.getElementById('compose-subject').value.trim();
+  const body = document.getElementById('compose-body').value.trim();
+  const folder = document.getElementById('compose-folder').value;
+  if (!to || !subject || !body) {
+    showToast('Rellena todos los campos para enviar el correo.');
+    return;
+  }
+  const folderData = FOLDERS[folder];
+  if (!folderData) {
+    showToast('Selecciona una carpeta válida.');
+    return;
+  }
+  const id = Math.max(0, ...getAllEmails().map(e => e.id)) + 1;
+  folderData.emails.unshift({
+    id,
+    sender: 'Tú',
+    email: to,
+    subject,
+    preview: body.slice(0, 80),
+    body: `Para: ${to}\n\n${body}`,
+    time: 'Ahora',
+    unread: false,
+    priority: false,
+    spam: false
+  });
+  closeCompose();
+  showToast('✉ Correo redactado y guardado en la carpeta seleccionada.');
+  updateStats();
+  openFolder(folder);
+}
+
+function applyComposeTemplate(index) {
+  const body = document.getElementById('compose-body');
+  if (!body) return;
+  body.value = REPLY_TEMPLATES[index];
+}
+
+function responder() {
+  // open reply templates and editor below the email
+  showReplyComposer(true);
+  const editor = document.getElementById('reply-editor');
+  if (editor) editor.focus();
+}
+
+function createFolder() {
+  const name = prompt('Nombre de la nueva carpeta:');
+  if (!name || !name.trim()) {
+    showToast('Debe introducir un nombre válido.');
+    return;
+  }
+  const key = name.trim().toLowerCase().replace(/[^a-z0-9]+/g, '_');
+  if (FOLDERS[key]) {
+    showToast('Ya existe una carpeta con ese nombre.');
+    return;
+  }
+  FOLDERS[key] = { name: name.trim(), icon: '📁', color: '#f3f3f3', textColor: 'var(--text)', emails: [] };
+  folderIsPriority[key] = false;
+  showToast(`📁 Carpeta "${name.trim()}" creada.`);
+  renderSidebarFolders();
+  updateStats();
+}
+
+function showReplyComposer(show) {
+  const box = document.getElementById('reply-box');
+  if (!box) return;
+  if (show) {
+    box.style.display = 'block';
+    const editor = document.getElementById('reply-editor');
+    const templates = document.getElementById('reply-templates');
+    const greeting = `Hola ${currentEmail ? currentEmail.sender.split(' ')[0] : ''},\n\n`;
+    if (editor) editor.value = greeting;
+    if (templates) {
+      templates.innerHTML = REPLY_TEMPLATES.map((text, idx) =>
+        `<div class="reply-template" onclick="applyReplyTemplate(${idx})">${text}</div>`
+      ).join('');
+    }
+  } else {
+    box.style.display = 'none';
+  }
+}
+
+function closeReplyComposer() {
+  const box = document.getElementById('reply-box');
+  if (box) box.style.display = 'none';
+}
+
+function applyReplyTemplate(index) {
+  const editor = document.getElementById('reply-editor');
+  if (!editor) return;
+  editor.value = REPLY_TEMPLATES[index];
+}
+
+function sendReply() {
+  if (!currentEmail) return;
+  const editor = document.getElementById('reply-editor');
+  if (!editor) return;
+  const text = editor.value.trim();
+  if (!text) {
+    showToast('✉ Escribe un mensaje antes de enviar.');
+    return;
+  }
+  if (currentEmail.priority) {
+    currentEmail.priority = false;
+    currentEmail.dueDays = null;
+    document.getElementById('star-label').textContent = 'Marcar prioritario';
+  }
+  closeReplyComposer();
+  const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  currentEmail.body += `\n\n---\nRespuesta enviada ${time}:\n${text}`;
+  document.getElementById('detail-body').innerHTML = currentEmail.body.split('\n').map(line => line.trim() ? `<p>${line}</p>` : '').join('');
+  document.getElementById('detail-meta').innerHTML = `
+    <div class="meta-chip">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <strong>${currentEmail.sender}</strong>
+    </div>
+    <div class="meta-chip">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+      ${currentEmail.email}
+    </div>
+  `;
+  showToast('✉ Respuesta enviada y correo retirado de prioritarios.');
+  updateStats();
+}
+
+function verPerfil() {
+  const modal = document.getElementById('profile-modal');
+  if (!modal) return;
+  if (window.currentProfile) updateProfileModal(window.currentProfile);
+  modal.style.display = 'flex';
+}
+
+function closeProfileModal() {
+  const modal = document.getElementById('profile-modal');
+  if (!modal) return;
+  modal.style.display = 'none';
+}
+
+function cambiarCuenta() {
+  currentEmail = null;
+  currentFolder = null;
+  currentView = 'home';
+  currentSearchQuery = '';
+  document.getElementById('input-email').value = '';
+  document.getElementById('input-pass').value = '';
+  document.getElementById('tick-email').textContent = '';
+  document.getElementById('tick-pass').textContent = '';
+  document.getElementById('btn-login').classList.remove('ready');
+  showScreen('login');
+  showToast('🔄 Sesión cerrada. Introduce otra cuenta.');
+}
+
+function sugerenciaIA(msg) { showToast('🤖 ' + msg); }
+
+function closeAiPanel() { document.getElementById('ai-panel-container').innerHTML = ''; }
+
+// ─── AI ───
+let _aibusy = false;
+
+async function callAI(prompt) {
+  if (_aibusy) throw new Error('busy');
+  _aibusy = true;
+  try {
+    const API_KEY = 'TU_API_KEY_AQUI';
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`,
+      { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ contents:[{ parts:[{ text: prompt }] }] }) }
+    );
+    if (res.status === 429) throw new Error('rate_limit');
+    const data = await res.json();
+    return data.candidates[0].content.parts[0].text;
+  } finally {
+    await new Promise(r => setTimeout(r, 3000));
+    _aibusy = false;
+  }
+}
+
+function showAIPanel(label, content, loading=false) {
+  const container = document.getElementById('ai-panel-container');
+  container.innerHTML = `
+    <div class="ai-panel">
+      <div class="ai-panel-header">
+        <div class="ai-dot"></div>
+        <div class="ai-label">${label}</div>
+        <button class="ai-close" onclick="document.getElementById('ai-panel-container').innerHTML=''">✕</button>
+      </div>
+      <div class="ai-body" id="ai-body-content">
+        ${loading ? '<div class="ai-loading"><div class="spinner"></div>Analizando con IA...</div>' : content}
+      </div>
+    </div>`;
+}
+
+function formatAI(text) {
+  return text.split('\n').filter(l=>l.trim()).map(l =>
+    `<p>${l.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\*(.*?)\*/g,'<em>$1</em>')}</p>`
+  ).join('');
+}
+
+async function resumirUno() {
+  if (!currentEmail) return;
+  showAIPanel('Resumen IA — en desarrollo', '<p>Esta función de resumen con IA está deshabilitada en esta versión. Llegará mejorada en Prioritz v2.</p>');
+}
+
+async function resumirTodos() {
+  if (!currentFolder) return;
+  showAIPanel('Resumen IA — en desarrollo', '<p>La generación automática de resumen de carpeta está en fase experimental y estará disponible en v2.</p>');
+}
+
+// ─── TOAST ───
+let toastT = null;
+function showToast(msg) {
+  const old = document.querySelector('.toast');
+  if (old) old.remove();
+  clearTimeout(toastT);
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  toastT = setTimeout(() => t.remove(), 3000);
+}
+</script>
+</body>
+</html>
